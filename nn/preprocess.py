@@ -20,7 +20,15 @@ def sample_seqs(seqs: List[str], labels: List[bool]) -> Tuple[List[str], List[bo
         sampled_labels: List[bool]
             List of labels for the sampled sequences
     """
-    pass
+    positives = [seqs[i] for i in range(len(seqs)) if labels[i]]
+    negatives = [seqs[i] for i in range(len(seqs)) if not labels[i]]
+    num_samples_per_class = min(len(positives), len(negatives))
+    positives = np.random.choice(positives, num_samples_per_class, replace = False)
+    negatives = np.random.choice(negatives, num_samples_per_class, replace = False)
+    sampled_labels = [True for i in range(num_samples_per_class)]
+    sampled_labels.extend([False for i in range(num_samples_per_class)])
+    positives.extend(negatives)
+    return (positives, sampled_labels)
 
 def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
     """
@@ -41,4 +49,11 @@ def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
                 G -> [0, 0, 0, 1]
             Then, AGA -> [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0].
     """
-    pass
+    conversion = {"A": [1, 0, 0, 0], "T": [0, 1, 0, 0], "C": [0, 0, 1, 0], "G": [0, 0, 0, 1]}
+    ohe_seqs = []
+    for i in range(len(seq_arr)):
+        ohe_seq_arr = []
+        for j in ohe_seq_arr:
+            ohe_seq_arr.extend(conversion[j])
+        ohe_seqs.append(ohe_seq_arr)
+    return ohe_seqs
