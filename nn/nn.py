@@ -127,10 +127,11 @@ class NeuralNetwork:
         """
         A = X.T
         print("X.T.SHAPE:", X.T.shape)
-        cache = {'A': [], 'Z': []}  # Initialize cache with input layer activation
+        cache = {'A': [A], 'Z': []}  # Initialize cache with input layer activation
 
         for idx, layer in enumerate(self.arch):
             print("idx: ", idx)
+            print(self._param_dict.keys())
             layer_idx = idx + 1
             A_prev = A  # Set the activation from the previous layer
             W_curr, b_curr = self._param_dict['W' + str(layer_idx)], self._param_dict['b' + str(layer_idx)]  # Extract current layer weights and biases
@@ -233,7 +234,11 @@ class NeuralNetwork:
             grad_dict: Dict[str, ArrayLike]
                 Dictionary containing the gradient information from most recent round of backprop.
         """
-        self._param_dict = grad_dict
+        for i in self._param_dict.keys():
+            print("shapes: ", self._param_dict[i].shape, grad_dict[("d" + i)].shape)
+            self._param_dict[i] = self._param_dict[i] - grad_dict[("d" + i)] * self._lr
+            # self._param_dict[i] = grad_dict[i]
+        # self._param_dict = grad_dict
 
     def fit(
         self,
@@ -363,6 +368,7 @@ class NeuralNetwork:
         """
         dZ = np.array(dA, copy=True) 
         dZ[Z <= 0] = 0
+        dZ[Z > 0] = 1 # Maybe unnecessary
         return dZ
 
     def _binary_cross_entropy(self, y: ArrayLike, y_hat: ArrayLike) -> float:
@@ -398,7 +404,7 @@ class NeuralNetwork:
                 partial derivative of loss with respect to A matrix.
         """
         dA = -(y / (y_hat + 1e-15)) + ((1 - y) / (1 - y_hat + 1e-15))
-        return dA
+        return dA / y.shape[0]
 
     def _mean_squared_error(self, y: ArrayLike, y_hat: ArrayLike) -> float:
         """
@@ -415,8 +421,8 @@ class NeuralNetwork:
                 Average loss of mini-batch.
         """
         print("y.shape:", y.shape)
-        m = y.shape[0]  # Number of examples
-        loss = np.mean((y_hat - y) ** 2)
+        #m = y.shape[0]  # Number of examples
+        loss = np.mean((y_hat - y) ** 2) / y.shape
         return loss
 
     def _mean_squared_error_backprop(self, y: ArrayLike, y_hat: ArrayLike) -> ArrayLike:
@@ -433,5 +439,6 @@ class NeuralNetwork:
             dA: ArrayLike
                 partial derivative of loss with respect to A matrix.
         """
-        dA = 2 * (y_hat - y) / y.shape[0]
+        print("da: ", y_hat.shape, y.shape)
+        dA = 2 * (y_hat - y) / y.shape
         return dA
