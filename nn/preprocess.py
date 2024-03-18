@@ -2,6 +2,7 @@
 import numpy as np
 from typing import List, Tuple
 from numpy.typing import ArrayLike
+import random
 
 def sample_seqs(seqs: List[str], labels: List[bool]) -> Tuple[List[str], List[bool]]:
     """
@@ -23,11 +24,14 @@ def sample_seqs(seqs: List[str], labels: List[bool]) -> Tuple[List[str], List[bo
     positives = [seqs[i] for i in range(len(seqs)) if labels[i]]
     negatives = [seqs[i] for i in range(len(seqs)) if not labels[i]]
     num_samples_per_class = min(len(positives), len(negatives))
-    positives = np.random.choice(positives, num_samples_per_class, replace = False)
-    negatives = np.random.choice(negatives, num_samples_per_class, replace = False)
+    positives = list(np.random.choice(positives, num_samples_per_class, replace = False))
+    negatives = list(np.random.choice(negatives, num_samples_per_class, replace = False))
     sampled_labels = [True for i in range(num_samples_per_class)]
     sampled_labels.extend([False for i in range(num_samples_per_class)])
     positives.extend(negatives)
+    min_len_sequence = min([len(i) for i in positives])
+    fixed_len_indeces = [random.randint(0, len(i) - min_len_sequence) for i in positives]
+    positives = [positives[i][fixed_len_indeces[i]:fixed_len_indeces[i] + min_len_sequence] for i in range(len(positives))]
     return (positives, sampled_labels)
 
 def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
@@ -53,7 +57,7 @@ def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
     ohe_seqs = []
     for i in range(len(seq_arr)):
         ohe_seq_arr = []
-        for j in ohe_seq_arr:
-            ohe_seq_arr.extend(conversion[j])
+        for j in seq_arr[i]:
+            ohe_seq_arr.extend(conversion[j.upper()])
         ohe_seqs.append(ohe_seq_arr)
     return ohe_seqs

@@ -2,6 +2,7 @@
 import numpy as np
 from typing import List, Dict, Tuple, Union
 from numpy.typing import ArrayLike
+import matplotlib.pyplot as plt
 
 class NeuralNetwork:
     """
@@ -236,7 +237,7 @@ class NeuralNetwork:
         """
         for i in self._param_dict.keys():
             print("shapes: ", self._param_dict[i].shape, grad_dict[("d" + i)].shape)
-            self._param_dict[i] = self._param_dict[i] - grad_dict[("d" + i)] * self._lr
+            self._param_dict[i] = self._param_dict[i] + grad_dict[("d" + i)] * self._lr
             # self._param_dict[i] = grad_dict[i]
         # self._param_dict = grad_dict
 
@@ -271,19 +272,21 @@ class NeuralNetwork:
         per_epoch_loss_val = []
 
         for epoch in range(self._epochs):
+            epoch_X_train = X_train[epoch * self._batch_size: (epoch + 1) * self._batch_size]
+            epoch_y_train = y_train[epoch * self._batch_size: (epoch + 1) * self._batch_size]
             # Forward pass
-            y_hat_train, cache_train = self.forward(X_train)
+            y_hat_train, cache_train = self.forward(epoch_X_train)
             y_hat_val, _ = self.forward(X_val)
 
             # Compute loss
-            loss_train = self._loss_function(y_train, y_hat_train)
+            loss_train = self._loss_function(epoch_y_train, y_hat_train)
             loss_val = self._loss_function(y_val, y_hat_val)
 
             per_epoch_loss_train.append(loss_train)
             per_epoch_loss_val.append(loss_val)
 
             # Backpropagation
-            grads = self.backprop(y_train, y_hat_train, cache_train)
+            grads = self.backprop(epoch_y_train, y_hat_train, cache_train)
             self._update_params(grads)
 
             print(f"Epoch {epoch+1}/{self._epochs}, Loss: {loss_train}, Val Loss: {loss_val}")
@@ -442,3 +445,19 @@ class NeuralNetwork:
         print("da: ", y_hat.shape, y.shape)
         dA = 2 * (y_hat - y) / y.shape
         return dA
+    
+    def _plot_loss_history(self, train_loss, val_loss):
+
+        # Make sure training has been run
+        assert len(train_loss) > 0, "Need to run training before plotting loss history."
+
+        # Create plot
+        fig, axs = plt.subplots(2, figsize=(8, 8))
+        fig.suptitle('Loss History')
+        axs[0].plot(np.arange(len(train_loss)), train_loss)
+        axs[0].set_title('Training')
+        axs[1].plot(np.arange(len(val_loss)), val_loss)
+        axs[1].set_title('Validation')
+        plt.xlabel('Steps')
+        fig.tight_layout()
+        plt.show()
