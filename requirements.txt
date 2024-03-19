@@ -1,0 +1,7 @@
+pytest
+numpy
+tensorflow
+random
+scikit-learn
+matplotlib
+typing
