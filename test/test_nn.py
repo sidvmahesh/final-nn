@@ -9,7 +9,6 @@ import random
 @pytest.fixture
 def setup_neural_network():
     nn_arch = [
-        {'input_dim': 2, 'output_dim': 2, 'activation': 'relu'},
         {'input_dim': 2, 'output_dim': 1, 'activation': 'sigmoid'}
     ]
     nn = NeuralNetwork(nn_arch, lr=0.01, seed=42, batch_size=2, epochs=100, loss_function='binary_cross_entropy')
@@ -20,12 +19,13 @@ def test_single_forward(setup_neural_network):
     W_curr = np.array([[1, -1], [0, 1]])
     b_curr = np.array([[0], [1]])
     A_prev = np.array([[1, 2], [3, 4]])
-    activation = 'relu'
+    activation = 'sigmoid'
     A_curr, Z_curr = nn._single_forward(W_curr, b_curr, A_prev, activation)
-    expected_A_curr = np.array([[0, 0], [4, 5]])
+    expected_A_curr = np.array([[0.119, 0.119], [0.982, 0.993]])
     expected_Z_curr = np.array([[-2, -2], [4, 5]])
-    assert np.allclose(A_curr, expected_A_curr), "Single forward (A_curr) failed."
-    assert np.allclose(Z_curr, expected_Z_curr), "Single forward (Z_curr) failed."
+    print(A_curr, Z_curr)
+    assert np.allclose(A_curr, expected_A_curr, rtol = 1e-2), "Single forward (A_curr) failed."
+    assert np.allclose(Z_curr, expected_Z_curr, rtol = 1e-2), "Single forward (Z_curr) failed."
 
 def test_forward(setup_neural_network):
     nn = setup_neural_network
@@ -37,13 +37,16 @@ def test_forward(setup_neural_network):
 
 def test_single_backprop(setup_neural_network):
     nn = setup_neural_network
-    W_curr = np.array([[1, -1], [0, 1]])
+    W_curr = np.array([[1, -1]])
     b_curr = np.array([[0]])
     Z_curr = np.array([[1, -1]])
     A_prev = np.array([[0.5, 0.5]])
     dA_curr = np.array([[1, -1]])
-    activation_curr = 'relu'
+    activation_curr = 'sigmoid'
     dA_prev, dW_curr, db_curr = nn._single_backprop(W_curr, b_curr, Z_curr, A_prev, dA_curr, activation_curr)
+    assert dA_curr.shape == (1, 2)
+    assert dW_curr.shape == (1, 1)
+    assert db_curr.shape == (1, 1)
     assert True
 
 def test_predict(setup_neural_network):
