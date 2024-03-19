@@ -43,7 +43,7 @@ def test_single_backprop(setup_neural_network):
     A_prev = np.array([[0.5, 0.5]])
     dA_curr = np.array([[1, -1]])
     activation_curr = 'relu'
-    # dA_prev, dW_curr, db_curr = nn._single_backprop(W_curr, b_curr, Z_curr, A_prev, dA_curr, activation_curr)
+    dA_prev, dW_curr, db_curr = nn._single_backprop(W_curr, b_curr, Z_curr, A_prev, dA_curr, activation_curr)
     assert True
 
 def test_predict(setup_neural_network):

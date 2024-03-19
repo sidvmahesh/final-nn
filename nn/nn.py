@@ -370,8 +370,8 @@ class NeuralNetwork:
                 Partial derivative of current layer Z matrix.
         """
         dZ = np.array(dA, copy=True) 
-        dZ[Z <= 0] = 0
-        dZ[Z > 0] = 1 # Maybe unnecessary
+        dZ[Z < 0] = 0
+        dZ[Z >= 0] = 1 # Maybe unnecessary
         return dZ
 
     def _binary_cross_entropy(self, y: ArrayLike, y_hat: ArrayLike) -> float:
